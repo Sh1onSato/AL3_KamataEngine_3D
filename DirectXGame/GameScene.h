@@ -1,6 +1,7 @@
 #pragma once
 #include"Player.h"
 #include<vector>
+#include"Skydome.h"
 
 // ゲームシーン
 class GameScene {
@@ -32,5 +33,11 @@ private:
 
 	// 自キャラ
 	Player* player_ = nullptr;
+
+	// スカイドーム
+	Skydome* skydome_ = nullptr;
+
+	// 3Dモデル
+	KamataEngine:: Model* modelSkydome_ = nullptr;
 
 };
