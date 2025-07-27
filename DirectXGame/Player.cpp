@@ -1,5 +1,7 @@
 #include "Player.h"
 #include <cassert>
+#include "Math.h"
+
 
 void Player::Initialize(KamataEngine::Model* model, uint32_t textureHandle,KamataEngine::Camera* camera) { 
 	// NULLポインタチェック
@@ -11,15 +13,16 @@ void Player::Initialize(KamataEngine::Model* model, uint32_t textureHandle,Kamat
 	camera_ = camera;
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
-	
+	worldTransform_.translation_.y = 2.0f;
 
 }
 
 void Player::Update() { 
 	// 行列を定数バッファに転送
-	worldTransform_.TransferMatrix();
-
+	WorldTransformUpdate(worldTransform_);
 }
+
+
 
 void Player::Draw() { 
 

@@ -1,4 +1,5 @@
 #include "Skydome.h"
+
 void Skydome::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera) {
 	// 引数の内容をメンバ変数に記録
 	model_ = model;
@@ -6,8 +7,8 @@ void Skydome::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camer
 	worldTransform_.Initialize();
 }
 
-void Skydome::Update() {
-
+void Skydome::Update() { 
+	worldTransform_.TransferMatrix(); 
 }
 
 void Skydome::Draw() { 
