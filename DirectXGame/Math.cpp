@@ -1,6 +1,5 @@
 #include "Math.h"
 
-	
 Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b) {
 	Matrix4x4 result;
 	for (int i = 0; i < 4; ++i) {
@@ -13,6 +12,7 @@ Matrix4x4 Multiply(const Matrix4x4& a, const Matrix4x4& b) {
 	}
 	return result;
 }
+
 
 Matrix4x4 MakeScaleMatrix(const Vector3& Scale) {
 	Matrix4x4 result;

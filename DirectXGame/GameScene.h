@@ -2,6 +2,7 @@
 #include"Player.h"
 #include<vector>
 #include"Skydome.h"
+#include"MapChipField.h"
 
 // ゲームシーン
 class GameScene {
@@ -16,7 +17,8 @@ public:
 	// 描画
 	void Draw();
 
-	std::vector<std::vector<KamataEngine::WorldTransform*>>  worldTransformBlocks_;
+	void GenerateBlocks();
+
 
 private:
 	//テクスチャハンドル
@@ -33,11 +35,21 @@ private:
 
 	// 自キャラ
 	Player* player_ = nullptr;
+	// プレイヤーモデル
+	KamataEngine::Model* player_model_ = nullptr;
+
+	// ブロックモデル
+	KamataEngine::Model* block_model_ = nullptr;
+	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+
 
 	// スカイドーム
 	Skydome* skydome_ = nullptr;
 
 	// 3Dモデル
 	KamataEngine:: Model* modelSkydome_ = nullptr;
+
+	// マップチップフィールド
+	MapChipField* mapChipField_ = nullptr;
 
 };

@@ -13,8 +13,9 @@ void Player::Initialize(KamataEngine::Model* model, uint32_t textureHandle,Kamat
 	camera_ = camera;
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
-	worldTransform_.translation_.y = 2.0f;
-
+	worldTransform_.translation_.x = 1.0f; // X座標をずらす
+	worldTransform_.translation_.y = 1.0f;  // Y座標をずらす（元の2.0fから変更）
+	worldTransform_.translation_.z = -5.0f; // Z座標をずらす
 }
 
 void Player::Update() { 
