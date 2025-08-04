@@ -24,14 +24,11 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 	
 	//引数の内容をメンバ変数に記録
 	model_ = model;
-	worldTransform_.translation_ = position;
+	
 	camera_ = camera;
 	// ワールド変換の初期化
 	worldTransform_.Initialize();
-	worldTransform_.translation_.x = 1.0f;
-	worldTransform_.translation_.y = 1.0f;  
-	worldTransform_.translation_.z = -5.0f; 
-
+	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
 }
 

@@ -3,6 +3,7 @@
 #include<vector>
 #include"Skydome.h"
 #include"MapChipField.h"
+#include "CameraController.h"
 
 // ゲームシーン
 class GameScene {
@@ -51,5 +52,7 @@ private:
 
 	// マップチップフィールド
 	MapChipField* mapChipField_ = nullptr;
+
+	CameraController* CController_ = nullptr;
 
 };

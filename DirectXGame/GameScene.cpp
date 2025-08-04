@@ -45,6 +45,15 @@ void GameScene::Initialize() {
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 	GenerateBlocks();
 
+	CController_ = new CameraController(); 
+	CController_->Initialize(&camera_);    
+	CController_->SetTarget(player_);
+	CController_->Reset();
+
+	CameraController::Rect cameraArea = {12.0f, 100 - 12.0f, 6.0f, 6.0f};
+	CController_->SetMovableArea(cameraArea);
+
+
 	// デバックカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 }
@@ -76,8 +85,9 @@ void GameScene::GenerateBlocks() {
 
 void GameScene::Update() { 
 	player_->Update();
-
 	skydome_->Update();
+	CController_->Update();
+
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
 			if (!worldTransformBlock)
