@@ -27,7 +27,9 @@ void GameScene::Initialize() {
 	player_ = new Player();
 	// 自キャラの初期化
 	player_model_ = Model::CreateFromOBJ("player");
-	player_->Initialize(player_model_, textureHandle_, &camera_);
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
+
+	player_->Initialize(player_model_, &camera_, playerPosition);
 
 	//スカイドームの生成
 	skydome_ = new Skydome();
