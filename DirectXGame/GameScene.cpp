@@ -23,14 +23,6 @@ void GameScene::Initialize() {
 	// カメラの初期化
 	camera_.Initialize();
 
-	//自キャラの生成
-	player_ = new Player();
-	// 自キャラの初期化
-	player_model_ = Model::CreateFromOBJ("player");
-	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
-
-	player_->Initialize(player_model_, &camera_, playerPosition);
-
 	//スカイドームの生成
 	skydome_ = new Skydome();
 	// 3Dモデルの生成
@@ -44,6 +36,18 @@ void GameScene::Initialize() {
 	mapChipField_ = new MapChipField();
 	mapChipField_->LoadMapChipCsv("Resources/blocks.csv");
 	GenerateBlocks();
+
+	// 自キャラの生成
+	player_ = new Player();
+	// 自キャラの初期化
+	player_model_ = Model::CreateFromOBJ("player");
+	Vector3 playerPosition = mapChipField_->GetMapChipPositionByIndex(2, 18);
+
+	player_->SetMapChipField(mapChipField_);
+
+
+	player_->Initialize(player_model_, &camera_, playerPosition);
+
 
 	CController_ = new CameraController(); 
 	CController_->Initialize(&camera_);    

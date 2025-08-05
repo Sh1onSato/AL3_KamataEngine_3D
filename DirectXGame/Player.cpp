@@ -5,6 +5,8 @@
 #include <numbers>
 #include <algorithm>
 #include "Math.h"
+#include "MapChipField.h"
+
 
 
 float Player::EaseInOut(float t, float start, float end) {
@@ -18,22 +20,7 @@ float Player::EaseInOut(float t, float start, float end) {
 	return start + (end - start) * t_eased;
 }
 
-void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const Vector3& position) { 
-	// NULLポインタチェック
-	assert(model);
-	
-	//引数の内容をメンバ変数に記録
-	model_ = model;
-	
-	camera_ = camera;
-	// ワールド変換の初期化
-	worldTransform_.Initialize();
-	worldTransform_.translation_ = position;
-	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
-}
-
-void Player::Update() { 
-
+void Player::InputMove() {
 	// 移動入力
 	if (onGround_) {
 		// キーボード入力を取得
@@ -81,6 +68,9 @@ void Player::Update() {
 			// 非入力時は移動減衰をかける
 			velocity_.x *= (1.0f - kAttenuation);
 		}
+		if (std::abs(velocity_.x) <= 0.0001f) {
+			velocity_.x = 0.0f;
+		}
 
 		if (Input::GetInstance()->PushKey(DIK_UP)) {
 			// ジャンプ初速
@@ -93,9 +83,128 @@ void Player::Update() {
 		// 落下速度制限
 		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
-	worldTransform_.translation_.x += velocity_.x;
-	worldTransform_.translation_.y += velocity_.y;
-	worldTransform_.translation_.z += velocity_.z;
+}
+
+void Player::CheckMapCollision(CollisionMapInfo& info) {
+
+	CheckMapCollisionUp(info);
+	CheckMapCollisionDown(info);
+	CheckMapCollisionRight(info);
+	CheckMapCollisionLeft(info);
+}
+
+void Player::CheckMapCollisionUp(CollisionMapInfo& info) {
+	if (info.move.y <= 0) {
+		return;
+	}
+
+	std::array<Vector3, kNumCorner> positionsNew;
+
+	for (uint32_t i = 0; i < positionsNew.size(); ++i) {
+		Vector3 newCenterPosition;
+		newCenterPosition.x = worldTransform_.translation_.x + info.move.x;
+		newCenterPosition.y = worldTransform_.translation_.y + info.move.y;
+		newCenterPosition.z = worldTransform_.translation_.z + info.move.z;
+
+		positionsNew[i] = CornerPosition(newCenterPosition, static_cast<Corner>(i));
+	}
+
+	MapChipType mapChipType;
+	// 真上の当たり判定を行う
+	bool hit = false;
+
+	// 左上点の判定
+	MapChipField::IndexSet indexSet;
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kLeftTop]);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+
+	if (mapChipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	// 右上点の判定
+	indexSet = mapChipField_->GetMapChipIndexSetByPosition(positionsNew[kRightTop]);
+	mapChipType = mapChipField_->GetMapChipTypeByIndex(indexSet.xIndex, indexSet.yIndex);
+
+	if (mapChipType == MapChipType::kBlock) {
+		hit = true;
+	}
+
+	if (hit) {
+		// 現在座標が壁の外か判定
+		MapChipField::IndexSet indexSetNow;
+		Vector3 offset;
+		offset.x = 0;
+		offset.y = +kHeight / 2.0f;
+		offset.z = 0;
+
+		Vector3 positionWithOffset;
+		positionWithOffset.x = worldTransform_.translation_.x + offset.x;
+		positionWithOffset.y = worldTransform_.translation_.y + offset.y;
+		positionWithOffset.z = worldTransform_.translation_.z + offset.z;
+
+		indexSetNow = mapChipField_->GetMapChipIndexSetByPosition(positionWithOffset);
+		if (indexSetNow.yIndex != indexSet.yIndex) {
+			// めり込みを排除する方向に移動量を設定する
+			indexSet = mapChipField_->GetMapChipIndexSetByPosition(
+			    {worldTransform_.translation_.x + info.move.x + 0, worldTransform_.translation_.y + info.move.y + (+kHeight / 2.0f), worldTransform_.translation_.z + info.move.z + 0});
+			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
+			info.move.y = std::max(0.0f, rect.bottom - worldTransform_.translation_.y - (kHeight / 2.0f + kBlank));
+			info.ceiling = true;
+		}
+	}
+}
+
+void Player::CheckMapCollisionDown(CollisionMapInfo& info) { info; }
+void Player::CheckMapCollisionRight(CollisionMapInfo& info) { info; }
+void Player::CheckMapCollisionLeft(CollisionMapInfo& info) { info; }
+
+Vector3 Player::CornerPosition(const Vector3& center, Corner corner) {
+
+	Vector3 offsetTable[] = {
+	    {+kWidth / 2.0f, -kHeight / 2.0f, 0}, //  kRightBottom
+	    {-kWidth / 2.0f, -kHeight / 2.0f, 0}, //  kLeftBottom
+	    {+kWidth / 2.0f, +kHeight / 2.0f, 0}, //  kRightTop
+	    {-kWidth / 2.0f, +kHeight / 2.0f, 0}  //  kLeftTop
+	};
+	Vector3 offset = offsetTable[static_cast<uint32_t>(corner)];
+	Vector3 result;
+	result.x = center.x + offset.x;
+	result.y = center.y + offset.y;
+	result.z = center.z + offset.z;
+
+	return result;
+}
+
+void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera, const Vector3& position) { 
+	// NULLポインタチェック
+	assert(model);
+	
+	//引数の内容をメンバ変数に記録
+	model_ = model;
+	
+	camera_ = camera;
+	// ワールド変換の初期化
+	worldTransform_.Initialize();
+	worldTransform_.translation_ = position;
+	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+}
+
+void Player::Update() { 
+	InputMove();
+	
+	CollisionMapInfo collisionMapInfo = {};
+	collisionMapInfo.move = velocity_;
+
+	CheckMapCollision(collisionMapInfo);
+
+	worldTransform_.translation_.x += collisionMapInfo.move.x;
+	worldTransform_.translation_.y += collisionMapInfo.move.y;
+	worldTransform_.translation_.z += collisionMapInfo.move.z;
+
+	if (collisionMapInfo.ceiling) {
+		velocity_.y = 0;
+	}
 
 	bool landing = false;
 

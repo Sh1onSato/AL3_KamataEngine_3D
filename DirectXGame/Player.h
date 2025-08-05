@@ -3,6 +3,8 @@
 
 using namespace KamataEngine;
 
+class MapChipField;
+
 ///<sumary>
 /// 自キャラ
 /// </summary>
@@ -12,6 +14,16 @@ class Player {
 		kRight,
 		kLeft,
 	};
+
+	// 角の位置
+	enum Corner { 
+		kRightBottom,
+		kLeftBottom,
+		kRightTop,
+		kLeftTop,
+		kNumCorner 
+	};
+
 	float EaseInOut(float t, float start, float end);
 	   
 	//初期化
@@ -26,6 +38,8 @@ class Player {
 	const WorldTransform& GetWorldTransform() const { return worldTransform_; }
 
 	const Vector3& GetVelocity() const { return velocity_; }
+
+	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
 	private:
 	// ワールド変換データ
@@ -58,4 +72,29 @@ class Player {
 	static inline const float kJumpAcceleration = 20.0f;
 	static inline const float kGravityAcceleration = 0.98f;
 	static inline const float kLimitFallSpeed = 0.5f;
+
+	MapChipField* mapChipField_ = nullptr;
+
+	static inline const float kWidth = 0.8f;
+	static inline const float kHeight = 0.8f;
+
+	static inline const float kBlank = 0.04f;
+
+	void InputMove();
+
+	struct CollisionMapInfo {
+		bool ceiling = false;
+		bool landing = false;
+		bool hitWall = false;
+		Vector3 move;
+	};
+
+	void CheckMapCollision(CollisionMapInfo& info);
+
+	void CheckMapCollisionUp(CollisionMapInfo& info);
+	void CheckMapCollisionDown(CollisionMapInfo& info);
+	void CheckMapCollisionRight(CollisionMapInfo& info);
+	void CheckMapCollisionLeft(CollisionMapInfo& info);
+
+	Vector3 CornerPosition(const Vector3& center, Corner corner);
 };
