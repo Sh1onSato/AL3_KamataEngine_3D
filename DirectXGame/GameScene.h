@@ -5,6 +5,7 @@
 #include"MapChipField.h"
 #include "CameraController.h"
 #include "Enemy.h"
+#include "DeathParticles.h"
 
 // ゲームシーン
 class GameScene {
@@ -62,4 +63,8 @@ private:
 	KamataEngine::Model* enemy_model_ = nullptr;
 
 	std::list<Enemy*> enemies_;
+
+	DeathParticles* deathParticles_ = nullptr;
+
+	Model* deathParticle_model_ = nullptr;
 };

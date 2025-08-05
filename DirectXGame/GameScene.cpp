@@ -19,6 +19,8 @@ GameScene::~GameScene() {
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
 	}
+	delete deathParticles_;
+	delete deathParticle_model_;
 }
 
 void GameScene::Initialize() {
@@ -49,7 +51,6 @@ void GameScene::Initialize() {
 
 	player_->SetMapChipField(mapChipField_);
 
-
 	player_->Initialize(player_model_, &camera_, playerPosition);
 
 
@@ -72,6 +73,12 @@ void GameScene::Initialize() {
 
 		enemies_.push_back(newEnemy);
 	}
+
+	deathParticle_model_ = Model::CreateFromOBJ("deathParticle");
+
+	deathParticles_ = new DeathParticles;
+	deathParticles_->Initialize(deathParticle_model_, &camera_, playerPosition);
+
 	// デバックカメラの生成
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 }
@@ -138,6 +145,10 @@ void GameScene::Update() {
 	debugCamera_->Update();
 
 	CheckAllCollisions();
+
+	if (deathParticles_) {
+		deathParticles_->Update();
+	}
 }
 
 void GameScene::Draw() { 
@@ -159,6 +170,10 @@ void GameScene::Draw() {
 	}
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
+	}
+
+	if (deathParticles_) {
+		deathParticles_->Draw();
 	}
 
 	Model::PostDraw();
