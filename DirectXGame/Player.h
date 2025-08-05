@@ -1,9 +1,11 @@
 #pragma once
 #include "KamataEngine.h"
+#include "Math.h"
 
 using namespace KamataEngine;
 
 class MapChipField;
+class Enemy;
 
 ///<sumary>
 /// 自キャラ
@@ -41,6 +43,11 @@ class Player {
 
 	void SetMapChipField(MapChipField* mapChipField) { mapChipField_ = mapChipField; }
 
+	Vector3 GetWorldPosition();
+
+	AABB GetAABB();
+
+	void OnCollision(const Enemy* enemy);
 	private:
 	// ワールド変換データ
 	KamataEngine::WorldTransform worldTransform_; 

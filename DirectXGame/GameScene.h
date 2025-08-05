@@ -21,6 +21,7 @@ public:
 
 	void GenerateBlocks();
 
+	void CheckAllCollisions();
 
 private:
 	//テクスチャハンドル
@@ -59,4 +60,6 @@ private:
 	Enemy* enemy_ = nullptr;
 
 	KamataEngine::Model* enemy_model_ = nullptr;
+
+	std::list<Enemy*> enemies_;
 };

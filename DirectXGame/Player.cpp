@@ -397,9 +397,7 @@ void Player::Update() {
 
 	CheckMapCollision(collisionMapInfo);
 
-	worldTransform_.translation_.x += collisionMapInfo.move.x;
-	worldTransform_.translation_.y += collisionMapInfo.move.y;
-	worldTransform_.translation_.z += collisionMapInfo.move.z;
+	worldTransform_.translation_ += collisionMapInfo.move;
 
 	if (collisionMapInfo.ceiling) {
 		velocity_.y = 0;
@@ -409,14 +407,6 @@ void Player::Update() {
 
 	// 接地判定
 	UpdateOnGround(collisionMapInfo);
-	bool landing = false;
-
-	if (velocity_.y < 0) {
-		// Y座標が地面以下になったら着地
-		if (worldTransform_.translation_.y <= 1.0f) {
-			landing = true;
-		}
-	}
 
 	// 旋回制御
 	if (turnTimer_ > 0.0f) {
@@ -427,7 +417,7 @@ void Player::Update() {
 
 		float destinationRotationY = destinationRotationYTable[static_cast<uint32_t>(lrDirection_)];
 
-		worldTransform_.rotation_.y = EaseInOut(destinationRotationY, turnFirstRotationY_, turnTimer_ / kTimeTurn);
+		worldTransform_.rotation_.y = EaseInOut(turnTimer_ / kTimeTurn, turnFirstRotationY_, destinationRotationY);
 	}
 
 	// 行列を定数バッファに転送
@@ -444,3 +434,32 @@ void Player::Draw() {
 
 
 }
+
+Vector3 Player::GetWorldPosition() {
+
+	Vector3 worldPos;
+	// ワールド行列の平行移動成分を取得（ワールド座標）
+	worldPos.x = worldTransform_.matWorld_.m[3][0];
+	worldPos.y = worldTransform_.matWorld_.m[3][1];
+	worldPos.z = worldTransform_.matWorld_.m[3][2];
+	return worldPos;
+}
+
+AABB Player::GetAABB() {
+
+	Vector3 worldPos = GetWorldPosition();
+
+	AABB aabb;
+
+	aabb.min = {worldPos.x - kWidth / 2.0f, worldPos.y - kHeight / 2.0f, worldPos.z - kWidth / 2.0f};
+	aabb.max = {worldPos.x + kWidth / 2.0f, worldPos.y + kHeight / 2.0f, worldPos.z + kWidth / 2.0f};
+
+	return aabb;
+}
+
+void Player::OnCollision(const Enemy* enemy) {
+	(void)enemy;
+	// ジャンプ初速
+	velocity_ += Vector3(0, kJumpAcceleration / 60.0f, 0);
+}
+
