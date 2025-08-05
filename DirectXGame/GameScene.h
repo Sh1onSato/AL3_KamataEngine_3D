@@ -24,7 +24,17 @@ public:
 
 	void CheckAllCollisions();
 
+	bool IsFinished() const { return finished_; }
+
 private:
+	enum class Phase {
+		kPlay,  // ゲームプレイ
+		kDeath, // デス演出
+	};
+	Phase phase_;
+
+	void ChangePhase();
+
 	//テクスチャハンドル
 	uint32_t textureHandle_ = 0;
 	//3Dモデルデータ
@@ -67,4 +77,6 @@ private:
 	DeathParticles* deathParticles_ = nullptr;
 
 	Model* deathParticle_model_ = nullptr;
+
+	bool finished_ = false;
 };

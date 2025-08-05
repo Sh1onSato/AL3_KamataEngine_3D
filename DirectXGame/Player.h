@@ -48,6 +48,8 @@ class Player {
 	AABB GetAABB();
 
 	void OnCollision(const Enemy* enemy);
+
+	bool IsDead() const { return isDead_; }
 	private:
 	// ワールド変換データ
 	KamataEngine::WorldTransform worldTransform_; 
@@ -114,4 +116,6 @@ class Player {
 	static inline const float kGroundSearchHeight = 0.06f;
 
 	static inline const float kAttenuationWall = 0.2f;
+
+	bool isDead_ = false;
 };

@@ -83,6 +83,26 @@ void GameScene::Initialize() {
 	debugCamera_ = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight);
 }
 
+void GameScene::ChangePhase() {
+
+	switch (phase_) {
+	case Phase::kPlay:
+		
+		if (player_->IsDead()) {
+			// 死亡演出
+			phase_ = Phase::kDeath;
+
+			const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+
+			deathParticles_ = new DeathParticles;
+			deathParticles_->Initialize(deathParticle_model_, &camera_, deathParticlesPosition);
+		}
+		break;
+	case Phase::kDeath:
+		break;
+	}
+}
+
 void GameScene::GenerateBlocks() {
 
 	uint32_t numBlockVirtical = mapChipField_->GetNumBlockVirtical();
@@ -109,6 +129,20 @@ void GameScene::GenerateBlocks() {
 }
 
 void GameScene::Update() { 
+	ChangePhase();
+
+	switch (phase_) {
+	case Phase::kPlay:
+
+		break;
+	case Phase::kDeath:
+		// deathParticles_->IsFinished関数をDeathParticles.hに実装
+		if (deathParticles_ && deathParticles_->IsFinished()) {
+			finished_ = true;
+		}
+
+		break;
+	}
 	player_->Update();
 	skydome_->Update();
 	CController_->Update();
@@ -160,6 +194,7 @@ void GameScene::Draw() {
 	// スカイドームの描画
 	skydome_->Draw();
 
+	if (!player_->IsDead())
 	player_->Draw();
 	for (std::vector<WorldTransform*>& worldTransformBlockLine : worldTransformBlocks_) {
 		for (WorldTransform* worldTransformBlock : worldTransformBlockLine) {
@@ -171,7 +206,7 @@ void GameScene::Draw() {
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw();
 	}
-
+	if (player_->IsDead())
 	if (deathParticles_) {
 		deathParticles_->Draw();
 	}
