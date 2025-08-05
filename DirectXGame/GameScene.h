@@ -6,6 +6,7 @@
 #include "CameraController.h"
 #include "Enemy.h"
 #include "DeathParticles.h"
+#include "Fade.h"
 
 // ゲームシーン
 class GameScene {
@@ -28,8 +29,10 @@ public:
 
 private:
 	enum class Phase {
+		kFadeIn, // フェードイン
 		kPlay,  // ゲームプレイ
 		kDeath, // デス演出
+		kFadeOut, // フェードアウト
 	};
 	Phase phase_;
 
@@ -42,11 +45,6 @@ private:
 
 	//カメラ
 	KamataEngine::Camera camera_;
-	// デバックカメラ有効
-	bool debugCameraEnabled_ = false;
-	// デバックカメラ
-	KamataEngine::DebugCamera* debugCamera_ = nullptr;
-
 	// 自キャラ
 	Player* player_ = nullptr;
 	// プレイヤーモデル
@@ -55,6 +53,11 @@ private:
 	// ブロックモデル
 	KamataEngine::Model* block_model_ = nullptr;
 	std::vector<std::vector<WorldTransform*>> worldTransformBlocks_;
+
+	// デバッグカメラ有効
+	bool isDebugCameraActive_ = false;
+	// デバッグカメラ
+	KamataEngine::DebugCamera* debugCamera_ = nullptr;
 
 
 	// スカイドーム
@@ -79,4 +82,6 @@ private:
 	Model* deathParticle_model_ = nullptr;
 
 	bool finished_ = false;
+
+	Fade* fade_ = nullptr;
 };
