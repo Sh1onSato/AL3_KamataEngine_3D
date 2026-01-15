@@ -21,6 +21,26 @@ float Player::EaseInOut(float t, float start, float end) {
 }
 
 void Player::InputMove() {
+	// ジャンプ処理
+	if (Input::GetInstance()->TriggerKey(DIK_UP)) { // TriggerKey に変更して一度押したらジャンプするように
+		if (onGround_) {                            // 地面にいる時
+			// ジャンプ初速
+			velocity_.y = kJumpAcceleration / 60.0f; // velocity.y を直接設定
+			jumpCount_ = 1;                          // ジャンプ回数を1にする
+			onGround_ = false;                       // 空中にいる状態にする
+		} else if (jumpCount_ == 1 && !onGround_) {  // 空中で2段目ができるか
+			velocity_.y = kJumpAcceleration / 60.0f; // velocity.y を直接設定
+			jumpCount_ = 2;                          // ジャンプ回数を2にする
+		}
+	}
+
+	if (!onGround_) {
+		// 落下速度
+		velocity_.y += -kGravityAcceleration / 60.0f;
+		// 落下速度制限
+		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
+	}
+	
 	// 移動入力
 	if (onGround_) {
 		// キーボード入力を取得
@@ -58,7 +78,7 @@ void Player::InputMove() {
 			}
 			// 加速/減速
 			velocity_.x += acceleration.x;
-			velocity_.y += acceleration.y;
+			// velocity.y はジャンプ/落下で制御されるためここでは変更しない
 			velocity_.z += acceleration.z;
 
 			// 最大速度制限
@@ -71,17 +91,6 @@ void Player::InputMove() {
 		if (std::abs(velocity_.x) <= 0.0001f) {
 			velocity_.x = 0.0f;
 		}
-
-		if (Input::GetInstance()->PushKey(DIK_UP)) {
-			// ジャンプ初速
-			velocity_.y += kJumpAcceleration / 60.0f;
-		}
-
-	} else {
-		// 落下速度
-		velocity_.y += -kGravityAcceleration / 60.0f;
-		// 落下速度制限
-		velocity_.y = std::max(velocity_.y, -kLimitFallSpeed);
 	}
 }
 
@@ -246,6 +255,7 @@ void Player::UpdateOnGround(const CollisionMapInfo& info) {
 		if (info.landing) {
 			// 着地状態に切り替える（落下を止める）
 			onGround_ = true;
+			jumpCount_ = 0;
 			// 着地時にX速度を減衰
 			velocity_.x *= (1.0f - kAttenuationLanding);
 			// Y速度をゼロに
@@ -303,6 +313,7 @@ void Player::CheckMapCollisionRight(CollisionMapInfo& info) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 			info.move.x = std::max(0.0f, rect.left - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
 			info.hitWall = true;
+			onWallRight_ = true;
 		}
 	}
 }
@@ -352,6 +363,7 @@ if (info.move.x >= 0) {
 			MapChipField::Rect rect = mapChipField_->GetRectByIndex(indexSet.xIndex, indexSet.yIndex);
 			info.move.x = std::max(0.0f, rect.right - worldTransform_.translation_.x - (kWidth / 2.0f + kBlank));
 			info.hitWall = true;
+			onWallLeft_ = true;
 		}
 	}
 }
@@ -385,17 +397,33 @@ void Player::Initialize(KamataEngine::Model* model, KamataEngine::Camera* camera
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
 	worldTransform_.rotation_.y = std::numbers::pi_v<float> / 2.0f;
+	jumpCount_ = 0;
 }
 
 void Player::Update() { 
-	InputMove();
 	
 	CollisionMapInfo collisionMapInfo = {};
 	collisionMapInfo.move = velocity_;
 	collisionMapInfo.landing = false;
 	collisionMapInfo.hitWall = false;
 
+	onWallLeft_ = false;
+	onWallRight_ = false;
 	CheckMapCollision(collisionMapInfo);
+
+	// 壁蹴り処理 (InputMoveから移動)
+	if (!onGround_ && Input::GetInstance()->TriggerKey(DIK_SPACE)) { // 空中でかつスペースキーが押された
+		if (onWallRight_) { // 右壁に接触している場合
+			velocity_.y = kJumpAcceleration / 60.0f; // ジャンプ初速
+			velocity_.x = -(kJumpAcceleration / 60.0f); // 左方向に跳ねる
+		} else if (onWallLeft_) { // 左壁に接触している場合
+			velocity_.y = kJumpAcceleration / 60.0f; // ジャンプ初速
+			velocity_.x = (kJumpAcceleration / 60.0f); // 右方向に跳ねる
+		}
+	}
+
+	InputMove();
+
 
 	worldTransform_.translation_ += collisionMapInfo.move;
 

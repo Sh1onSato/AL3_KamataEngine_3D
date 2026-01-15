@@ -118,4 +118,11 @@ class Player {
 	static inline const float kAttenuationWall = 0.2f;
 
 	bool isDead_ = false;
+
+	int jumpCount_ = 0;
+
+	static inline const int kMaxJumpCount = 2;
+
+	bool onWallLeft_ = false;
+	bool onWallRight_ = false;
 };

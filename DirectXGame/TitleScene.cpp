@@ -88,7 +88,7 @@ void TitleScene::Draw() {
 	Model::PreDraw(commandList);
 
 	modelTitle_->Draw(worldTransformTitle_, camera_);
-	modelPlayer_->Draw(worldTransformPlayer_, camera_);
+	/*modelPlayer_->Draw(worldTransformPlayer_, camera_);*/
 
 	Model::PostDraw();
 
